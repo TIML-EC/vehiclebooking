@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隱藏設定頁</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Traditional Chinese', sans-serif;
+            text-align: center;
+            font-size: 16px;
+            margin: 0;
+            position: relative;
+            overflow-x: hidden; /* 防止横向滚动条出现 */
+            min-height: 100vh; /* 确保 body 至少占满整个视口高度 */
+        }
+
+        /* 設定頁樣式 */
+        #settings-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 2;
+            color: red;
+            /* 添加這一行將符號顏色設置為紅色 */
+        }
+
+        #settings-page {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #f4f4f4;
+            transition: left 0.3s ease;
+            z-index: 1;
+            padding-top: 50px;
+        }
+
+        #settings-page.show {
+            left: 0;
+        }
+
+        #settings-page button {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+        }
+
+        /* 分隔線樣式 */
+        #settings-page .separator {
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        /* 調整篩選部分樣式 */
+        #settings-page label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        #settings-page select {
+            width: 80%;
+        }
+
+        /* 媒體查詢，當屏幕寬度小於 600px 時調整樣式 */
+        @media (max-width: 600px) {
+            select,
+            button {
+                font-size: 0.9em;
+            }
+        }
+
+        iframe {
+            display: block;
+            margin: 0 auto;
+            width: 100%; /* 使 iframe 宽度占满页面 */
+            min-height: 1488px; /* 确保 iframe 高度足够 */
+            border: none; /* 去除边框 */
+        }
+    </style>
+</head>
+
+<body>
+    <span id="settings-toggle">▷</span>
+    <div id="settings-page">
+        <button onclick="location.reload()">重刷頁面</button>
+        <button onclick="window.open('https://timl-ec.github.io/vehiclebooking/apply.html', '_blank')">申請預約</button>
+        <button onclick="window.open('https://timl-ec.github.io/vehiclebooking/cancel.html', '_blank')">取消預約</button>
+        <div class="separator"></div>
+        <label for="licensePlateFilter">篩選車牌: </label>
+        <select id="licensePlateFilter"></select>
+        <label for="dateFilter">篩選日期: </label>
+        <select id="dateFilter"></select>
+        <label for="departmentFilter">篩選部門/工號: </label>
+        <select id="departmentFilter"></select>
+        <button id="filterButton">確定</button>
+    </div>
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdsfH6SQ21YoKHYt7_Cj2_hQQk0luRSBo6MQ2AcCe9L_FUmGg/viewform?embedded=true"
+        width="100%" height="1488" frameborder="0" marginheight="0" marginwidth="0">正在載入…</iframe>
+
+    <script>
+        function hideSettingsPage() {
+            const settingsPage = document.getElementById('settings-page');
+            const settingsToggle = document.getElementById('settings-toggle');
+            settingsPage.classList.remove('show');
+            settingsToggle.textContent = '▷';
+        }
+
+        // 为设定页的其他按钮添加点击事件监听器
+        const settingsPageButtons = document.querySelectorAll('#settings-page button:not(#filterButton)');
+        settingsPageButtons.forEach(button => {
+            button.addEventListener('click', hideSettingsPage);
+        });
+
+        // 设定页显示与隐藏逻辑
+        const settingsToggle = document.getElementById('settings-toggle');
+        const settingsPage = document.getElementById('settings-page');
+
+        settingsToggle.addEventListener('click', function () {
+            settingsPage.classList.toggle('show');
+            if (settingsPage.classList.contains('show')) {
+                settingsToggle.textContent = '◁';
+            } else {
+                settingsToggle.textContent = '▷';
+            }
+        });
+    </script>
+</body>
+
+</html>
