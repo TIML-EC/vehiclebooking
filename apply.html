@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>申請預約</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Traditional Chinese', sans-serif;
+            text-align: center;
+            font-size: 16px;
+            margin: 0;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2em;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 0.5em 0;
+        }
+        /* ver.20250318.01 */
+        /* 设定页样式 */
+        #settings-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 2;
+            color: red;
+        }
+
+        #settings-page {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #f4f4f4;
+            transition: left 0.3s ease;
+            z-index: 1;
+            padding-top: 50px;
+        }
+
+        #settings-page.show {
+            left: 0;
+        }
+
+        #settings-page button {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            /* 修改按鈕文字大小属性 */
+            font-size: 18px;   
+      }
+
+        /* 分隔线样式 */
+        #settings-page .separator {
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        /* 媒体查询，当屏幕宽度小于 600px 时调整样式 */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 0em;
+            }
+        }
+
+        iframe {
+            margin: 0 auto;
+            height: 90vh;
+            min-height: 750px;
+            width: 95%;
+            max-width: 800px;
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            iframe {
+                width: 100%;
+                margin: 0;
+            }
+            h1 {
+                font-size: 0em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <span id="settings-toggle">▷</span>
+    <div id="settings-page">
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/index.html'">系統主頁</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/cancel.html'">取消預約</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/status.html'">預約狀態</button>
+        <div class="separator"></div>
+    </div>
+    <h1>觀景山工程部車輛預約系統</h1>
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdof0atBh4Gm8tYX_Eb-SohzV6DmLvoANe4yRZhGiAvvtdbag/viewform?embedded=true"
+        width="440" height="100%" frameborder="1" marginheight="0" marginwidth="0">正在载入…</iframe>
+
+    <script>
+        // 设定页显示与隐藏逻辑
+        const settingsToggle = document.getElementById('settings-toggle');
+        const settingsPage = document.getElementById('settings-page');
+
+        settingsToggle.addEventListener('click', function () {
+            settingsPage.classList.toggle('show');
+            if (settingsPage.classList.contains('show')) {
+                settingsToggle.textContent = '◁';
+            } else {
+                settingsToggle.textContent = '▷';
+            }
+        });
+
+        // 为设定页的其他按钮添加点击事件监听器
+        const settingsPageButtons = document.querySelectorAll('#settings-page button');
+        settingsPageButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                settingsPage.classList.remove('show');
+                settingsToggle.textContent = '▷';
+            });
+        });
+    </script>
+</body>
+
+</html>
