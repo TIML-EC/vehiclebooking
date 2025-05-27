@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>預約狀態</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Traditional Chinese', sans-serif;
+            text-align: center;
+            font-size: 16px;
+            margin: 0;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.8125em;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 0.5em 0;
+        }
+
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 90%;
+            font-size: 1.25em;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 0.5em;
+        }
+
+        th {
+            font-weight: bold;
+        }
+
+        select {
+            margin: 0.625em;
+            padding: 0.3125em;
+        }
+
+        button {
+            padding: 0.3125em 0.625em;
+        }
+
+        /* ver.20250526.01 */
+        /* 设定页样式 */
+        #settings-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 2;
+            color: red; /* 添加这一行将符号颜色设置为红色 */
+        }
+
+        #settings-page {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #f4f4f4;
+            transition: left 0.3s ease;
+            z-index: 1;
+            padding-top: 50px;
+        }
+
+        #settings-page.show {
+            left: 0;
+        }
+
+        #settings-page button {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            /* 修改按鈕文字大小属性 */
+            font-size: 18px;  
+        }
+
+        /* 分隔线样式 */
+        #settings-page .separator {
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        /* 调整筛选部分样式 */
+        #settings-page label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        #settings-page select {
+            width: 80%;
+        }
+
+        /* 媒体查询，当屏幕宽度小于 600px 时调整样式 */
+        @media (max-width: 600px) {
+            table {
+                width: 100%;
+                font-size: 1em;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            select,
+            button {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <span id="settings-toggle">▷</span>
+    <div id="settings-page">
+        <button onclick="location.reload()">重刷頁面</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/index.html'">系統主頁</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/apply.html'">申請預約</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/cancel.html'">取消預約</button>
+       <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/key.html'">車匙現況</button>
+        <div class="separator"></div>
+         <label for="dateFilter">篩選 日期: </label>
+        <select id="dateFilter"></select>
+       <label for="licensePlateFilter">篩選 車牌: </label>
+        <select id="licensePlateFilter"></select>
+        <label for="departmentFilter">篩選 部門/工號: </label>
+        <select id="departmentFilter"></select>
+        <button id="filterButton">確定</button>
+    </div>
+    <h1>工程部車輛預約狀態</h1>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>序號</th>
+                <th>車牌</th>
+                <th>部門/工號</th>
+                <th>日期</th>
+                <th>時段</th>
+                <th>備註</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 這裡將填充從 Google Sheets 獲取的資料 -->
+        </tbody>
+    </table>
+
+    <script>
+        const apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1MmXgRt0ZPX_pSJO7-gnqWTalthPwQeAs1XWgkA6ovNo/values/status!A:H?key=AIzaSyDOG-GaL5gmd9eGSBnRAXnXgDGv9Ma9ZZo';
+        const table = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+        const licensePlateFilter = document.getElementById('licensePlateFilter');
+        const departmentFilter = document.getElementById('departmentFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const filterButton = document.getElementById('filterButton');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const timePeriodOrder = {
+            '日間 09:00 - 18:00': 1,
+            '早上 07:00 - 13:00': 2,
+            '中午 12:00 - 14:00': 3,
+            '下午 13:00 - 18:00': 4,
+            '傍晚 18:00 - 23:00': 5,
+            '深夜 23:00 - 07:00': 6,
+            '通宵 18:00 - 07:00': 7,
+            '整天 00:00 - 23:59': 8
+        };
+
+        let allValidRows = [];
+
+        async function fetchData() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                const rows = data.values || [];
+                let validRows = [];
+
+                console.log('获取到的总行数:', rows.length);
+
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    console.log(`第 ${i} 行数据:`, row);
+
+                    // 检查 H 栏是否为 1
+                    if (row.length > 7 && row[7] === '1') {
+                        // 检查 E 栏日期是否为过去日期
+                        if (row.length > 4) {
+                            const dateStr = row[4];
+                            const [year, month, day] = dateStr.match(/\d+/g);
+                            const rowDate = new Date(year, month - 1, day);
+                            if (rowDate < today) {
+                                continue;
+                            }
+                        }
+
+                        validRows.push(row);
+                    }
+                }
+
+                allValidRows = validRows;
+
+                validRows.sort((a, b) => {
+                    const dateA = new Date(a[4].match(/\d+/g)[0], a[4].match(/\d+/g)[1] - 1, a[4].match(/\d+/g)[2]);
+                    const dateB = new Date(b[4].match(/\d+/g)[0], b[4].match(/\d+/g)[1] - 1, b[4].match(/\d+/g)[2]);
+                    if (dateA < dateB) {
+                        return -1;
+                    } else if (dateA > dateB) {
+                        return 1;
+                    } else {
+                        const timePeriodA = a[5];
+                        const timePeriodB = b[5];
+                        return timePeriodOrder[timePeriodA] - timePeriodOrder[timePeriodB];
+                    }
+                });
+
+                populateTable(validRows);
+                populateFilters(validRows);
+            } catch (error) {
+                console.error('獲取資料時出錯:', error);
+            }
+        }
+
+        function populateTable(rows) {
+            table.innerHTML = '';
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const newRow = table.insertRow();
+                const columnsToInsert = [0, 1, 3, 4, 5, 6];
+                columnsToInsert.forEach((colIndex) => {
+                    const cell = newRow.insertCell();
+                    cell.textContent = row[colIndex] || '';
+                });
+            }
+        }
+
+        function populateFilters(rows) {
+            const licensePlates = new Set();
+            const departments = new Set();
+            const dates = new Set();
+
+            rows.forEach(row => {
+                licensePlates.add(row[1]);
+                departments.add(row[3]);
+                dates.add(row[4]);
+            });
+
+            licensePlateFilter.innerHTML = '<option value="">全部</option>';
+            licensePlates.forEach(plate => {
+                const option = document.createElement('option');
+                option.value = plate;
+                option.textContent = plate;
+                licensePlateFilter.appendChild(option);
+            });
+
+            dateFilter.innerHTML = '<option value="">全部</option>';
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                dateFilter.appendChild(option);
+            });
+
+            departmentFilter.innerHTML = '<option value="">全部</option>';
+            departments.forEach(department => {
+                const option = document.createElement('option');
+                option.value = department;
+                option.textContent = department;
+                departmentFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const selectedLicensePlate = licensePlateFilter.value;
+            const selectedDepartment = departmentFilter.value;
+            const selectedDate = dateFilter.value;
+
+            let filteredRows = allValidRows;
+
+            if (selectedLicensePlate) {
+                filteredRows = filteredRows.filter(row => row[1] === selectedLicensePlate);
+            }
+
+            if (selectedDate) {
+                filteredRows = filteredRows.filter(row => row[4] === selectedDate);
+            }
+
+            if (selectedDepartment) {
+                filteredRows = filteredRows.filter(row => row[3] === selectedDepartment);
+            }
+
+            populateTable(filteredRows);
+            hideSettingsPage();
+        }
+
+        function hideSettingsPage() {
+            const settingsPage = document.getElementById('settings-page');
+            const settingsToggle = document.getElementById('settings-toggle');
+            settingsPage.classList.remove('show');
+            settingsToggle.textContent = '▷';
+        }
+
+        filterButton.addEventListener('click', applyFilters);
+
+        // 为设定页的其他按钮添加点击事件监听器
+        const settingsPageButtons = document.querySelectorAll('#settings-page button:not(#filterButton)');
+        settingsPageButtons.forEach(button => {
+            button.addEventListener('click', hideSettingsPage);
+        });
+
+        // 设定页显示与隐藏逻辑
+        const settingsToggle = document.getElementById('settings-toggle');
+        const settingsPage = document.getElementById('settings-page');
+
+        settingsToggle.addEventListener('click', function () {
+            settingsPage.classList.toggle('show');
+            if (settingsPage.classList.contains('show')) {
+                settingsToggle.textContent = '◁';
+            } else {
+                settingsToggle.textContent = '▷';
+            }
+        });
+
+        // 每120秒自动刷新内容
+        setInterval(fetchData, 120000);
+
+        fetchData();
+    </script>
+</body>
+
+</html>
