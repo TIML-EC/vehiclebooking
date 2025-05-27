@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>車匙現況</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Traditional Chinese', sans-serif;
+            text-align: center;
+            font-size: 16px;
+            margin: 0;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.8125em;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 0.5em 0;
+        }
+        
+        .disclaimer {
+            font-size: 0.9em;
+            color: #666;
+            margin: 0.5em auto;
+            max-width: 90%;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 90%;
+            font-size: 1.25em;
+            empty-cells: show;
+        }
+
+        #dataTable tbody {
+            min-height: 2em;
+            display: table-row-group;
+        }
+
+        #dataTable tbody tr {
+            height: 2em;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 0.5em;
+        }
+
+        th {
+            font-weight: bold;
+        }
+
+        select {
+            margin: 0.625em;
+            padding: 0.3125em;
+        }
+
+        button {
+            padding: 0.3125em 0.625em;
+        }
+
+        /* ver.20250307.02 */
+        /* 设定页样式 */
+        #settings-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 2;
+            color: red; /* 添加这一行将符号颜色设置为红色 */
+        }
+
+        #settings-page {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #f4f4f4;
+            transition: left 0.3s ease;
+            z-index: 1;
+            padding-top: 50px;
+        }
+
+        #settings-page.show {
+            left: 0;
+        }
+
+        #settings-page button {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            /* 修改按鈕文字大小属性 */
+            font-size: 18px;  
+        }
+
+        /* 分隔线样式 */
+        #settings-page .separator {
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        /* 调整筛选部分样式 */
+        #settings-page label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        #settings-page select {
+            width: 80%;
+        }
+
+        /* 媒体查询，当屏幕宽度小于 600px 时调整样式 */
+        @media (max-width: 600px) {
+            table {
+                width: 100%;
+                font-size: 1em;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            select,
+            button {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <span id="settings-toggle">▷</span>
+    <div id="settings-page">
+        <button onclick="location.reload()">重刷頁面</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/index.html'">系統主頁</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/apply.html'">申請預約</button>
+        <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/cancel.html'">取消預約</button>
+    </div>
+    <h1>車匙現況</h1>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>NF1945 (七人車)</th>
+                <th>XG2550 (私家車)</th>
+                <th>YJ9205 (電動VAN)</th>
+                <th>VH9836 (尾板車)</th>
+                <th>HE3652 (7米高台車)</th>
+                <th>YJ6142 (24米高台車)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 這裡將填充從 Google Sheets 獲取的資料 -->
+        </tbody>
+    </table>
+
+    <div id="countdown">頁面將在 60 秒後刷新</div>
+    <div class="disclaimer">
+        <h3>免責聲明</h3>
+        <p>本平臺（或「我方」）提供的所有信息僅供參考。我方不保證所提供信息的及時性、準確性、完整性，亦不對因信息延誤、錯誤或遺漏導致的任何損失或損害承擔責任。</p>
+    </div>
+
+    <script>
+        const apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1MmXgRt0ZPX_pSJO7-gnqWTalthPwQeAs1XWgkA6ovNo/values/car_key!B4:G4?key=AIzaSyDOG-GaL5gmd9eGSBnRAXnXgDGv9Ma9ZZo';
+        const table = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        async function fetchData() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                const rows = data.values || [];
+                if (rows.length > 0) {
+                    populateTable([rows[0]]);
+                }
+            } catch (error) {
+                console.error('獲取資料時出錯:', error);
+            }
+        }
+
+        function populateTable(rows) {
+            table.innerHTML = '';
+            if (rows.length > 0) {
+                const row = rows[0];
+                const newRow = table.insertRow();
+                // 直接使用獲取的資料填充表格
+                row.forEach((cellData) => {
+                    const cell = newRow.insertCell();
+                    cell.textContent = cellData || '';
+                });
+            }
+        }
+
+        // 設定頁顯示與隱藏邏輯
+        const settingsToggle = document.getElementById('settings-toggle');
+        const settingsPage = document.getElementById('settings-page');
+
+        settingsToggle.addEventListener('click', function () {
+            settingsPage.classList.toggle('show');
+            if (settingsPage.classList.contains('show')) {
+                settingsToggle.textContent = '◁';
+            } else {
+                settingsToggle.textContent = '▷';
+            }
+        });
+
+        // 每60秒自動刷新內容
+        let countdown = 60;
+        const countdownElement = document.getElementById('countdown');
+
+        function updateCountdown() {
+            countdownElement.textContent = `頁面將在 ${countdown} 秒後刷新`;
+            countdown--;
+            if (countdown < 0) {
+                countdown = 60; // Reset countdown after refresh
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                const rows = data.values || [];
+                if (rows.length > 0) {
+                    populateTable([rows[0]]);
+                }
+                countdown = 60; // Reset countdown on successful fetch
+            } catch (error) {
+                console.error('獲取資料時出錯:', error);
+                countdown = 60; // Reset countdown even on error to avoid stuck
+            }
+        }
+
+        // 每秒更新倒數計時
+        setInterval(updateCountdown, 1000);
+
+        // 每60秒自動刷新內容
+        setInterval(fetchData, 60000);
+
+        fetchData();
+    </script>
+</body>
+
+</html>
