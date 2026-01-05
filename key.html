@@ -13,7 +13,7 @@
 
     <title>用車現況</title>
     <style>
-        /* ver.20251009.01 */
+        /* ver.20260105.01 */
         body {
             font-family: 'Noto Sans Traditional Chinese', sans-serif;
             text-align: center;
@@ -185,7 +185,7 @@
         <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/cancel.html'">取消預約</button>
         <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/status.html'">預約狀態</button>
     </div>
-    <h1>用車現況</h1>
+    <h1>用車現況(維修中)</h1>
 
     <table id="dataTable">
         <thead>
@@ -210,7 +210,7 @@
     </div>
 
     <script>
-        const apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1MmXgRt0ZPX_pSJO7-gnqWTalthPwQeAs1XWgkA6ovNo/values/car_key!B4:G4?key=AIzaSyDOG-GaL5gmd9eGSBnRAXnXgDGv9Ma9ZZo';
+        const apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1ICb0cFtjAR84_k-qnFubjdLeeBNtTNbZ99uYFLFePQE/values/car_key!B4:G4?key=AIzaSyDOG-GaL5gmd9eGSBnRAXnXgDGv9Ma9ZZo';
         const table = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -283,6 +283,7 @@
 
 
 </html>
+
 
 
 
