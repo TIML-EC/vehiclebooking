@@ -13,7 +13,7 @@
 
      <title>系統主頁</title>   
     <style>
-        /* ver.20251006.01 */
+        /* ver.20260119.01 */
         /* 整体页面字体设置 */
         body {
             font-family: 'LXGW WenKai Mono TC', monospace;
@@ -78,10 +78,35 @@
         <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/status.html'">預約狀態</button>
         <button onclick="window.location.href='https://timl-ec.github.io/vehiclebooking/key.html'">用車現況</button>
         <button onclick="window.open('https://timl-ec.github.io/vehiclebooking/guide.html', '_blank')">使用指南</button>
+
+        <p style="margin:8px 0 0; font-size:16px; color:#333;">可使用手機掃瞄以下QR Code瀏覽此網頁</p>
+
+        <!-- QR Code 區塊：顯示本頁網址 -->
+        <div id="qrcode" style="margin-top:16px;"></div>
+
+        <!-- 載入 QRCode.js 與初始化本頁網址 QR -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        <script>
+          (function(){
+            var el = document.getElementById('qrcode');
+            if (el && window && window.location && window.location.href) {
+              new QRCode(el, {
+                text: window.location.href,
+                width: 180,
+                height: 180,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+              });
+            }
+          })();
+        </script>
+    
     </div>
 </body>
 
 </html>
+
 
 
 
