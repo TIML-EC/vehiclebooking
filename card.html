@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFRC522 IC Card UI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>MFRC522 IC 咭名稱更改</h1>
+        <div class="card-container">
+            <div class="card">
+                <div class="card-status" id="card-status">未讀取到IC咭</div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="connect-button">連接 Arduino</button>
+            <select id="name-select">
+                <option value="EC">EC</option>
+                <option value="EL">EL</option>
+                <option value="BM">BM</option>
+                <option value="SO">SO</option>
+                <option value="VH">VH</option>
+                <option value="OPS">OPS</option>
+                <option value="充電">充電</option>
+                <option value="入油">入油</option>
+                <option value="維修">維修</option>
+                <option value="其它">其它</option>
+            </select>
+            <input type="text" id="custom-name" placeholder="或輸入自訂名稱">
+            <button id="write-button">寫入IC咭</button>
+        </div>
+        <div class="info-container">
+            <h2>IC 咭訊息</h2>
+            <pre id="card-info">此處將顯示讀取到的IC咭訊息</pre>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
